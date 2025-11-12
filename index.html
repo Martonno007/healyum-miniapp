@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Healyum</title>
+    <style>
+      body { font-family: system-ui; background:#0f1115; color:#fff; padding:20px; }
+      h1 { font-size:1.5em; }
+      button { background:#1e88e5; color:white; border:none; padding:10px 16px; border-radius:8px; font-size:1em; }
+    </style>
+  </head>
+  <body>
+    <h1>Healyum ⚡️</h1>
+    <p>Predict Tesla: will it go UP or DOWN?</p>
+    <button onclick="send('TSLA:UP')">UP 🚀</button>
+    <button onclick="send('TSLA:DOWN')">DOWN 📉</button>
+
+    <script>
+      Telegram.WebApp.ready();
+      function send(choice) {
+        Telegram.WebApp.sendData(choice);
+        Telegram.WebApp.close();
+      }
+    </script>
+  </body>
+</html>
