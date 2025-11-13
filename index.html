@@ -85,18 +85,25 @@
       </div>
     </div>
 
-    <script>
+   <script>
   const tg = window.Telegram.WebApp;
   tg.ready();
-  tg.expand(); // usa tutta l'altezza
+  tg.expand();
 
-  function sendChoice(choice) {
-    // 🔴 DEBUG: vediamo se il codice parte davvero
-    tg.showAlert('Sent: ' + choice);  // <-- deve comparire un popup in Telegram
-    tg.sendData(choice);              // manda i dati al bot
-    tg.close();                       // chiude la mini app
+  function sendChoice(side) {
+    const today = new Date().toISOString().slice(0, 10); // "2025-11-13"
+    const payload = {
+      type: 'BET',
+      marketId: `TSLA-${today}`,
+      side,      // "UP" o "DOWN"
+      stake: 1   // per ora puntata fissa a 1
+    };
+
+    tg.sendData(JSON.stringify(payload));
+    tg.close();
   }
 </script>
   </body>
 </html>
+
 
