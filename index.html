@@ -2,108 +2,404 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- 🔴 Rende la webapp leggibile sul telefono -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
     <title>Healyum ⚡</title>
 
-    <!-- SDK di Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
       :root {
         --bg: #020617;
-        --text: #e5e7eb;
+        --bg-card: #020617;
+        --accent-up: #22c55e;
+        --accent-down: #ef4444;
+        --text-main: #e5e7eb;
+        --text-muted: #9ca3af;
+        --border-subtle: #1f2937;
+      }
+
+      * {
+        box-sizing: border-box;
       }
 
       body {
         margin: 0;
         padding: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #0f172a, #020617 60%);
+        color: var(--text-main);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
       }
 
-      .container {
-        text-align: center;
-        padding: 24px 20px;
+      .wrapper {
         width: 100%;
-        max-width: 420px; /* così sta bene sia su iPhone che tablet */
-        margin: 0 auto;
+        max-width: 460px;
+        padding: 20px 16px;
       }
 
-      h1 {
-        font-size: 24px;
+      .card {
+        background: rgba(15, 23, 42, 0.95);
+        border-radius: 24px;
+        padding: 20px 18px 18px;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 8px;
       }
 
-      p {
-        font-size: 16px;
-        margin-bottom: 24px;
+      .title {
+        font-size: 20px;
+        font-weight: 700;
       }
 
-      .buttons {
+      .subtitle {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
+
+      .badge {
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border-subtle);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .badge-open {
+        border-color: rgba(34, 197, 94, 0.4);
+        color: #bbf7d0;
+        background: rgba(22, 163, 74, 0.18);
+      }
+
+      .badge-locked {
+        border-color: rgba(234, 179, 8, 0.7);
+        color: #facc15;
+        background: rgba(234, 179, 8, 0.12);
+      }
+
+      .badge-resolved {
+        border-color: rgba(148, 163, 184, 0.5);
+        color: #cbd5f5;
+        background: rgba(15, 23, 42, 0.7);
+      }
+
+      .market-id {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
+
+      .pools {
         display: flex;
-        justify-content: center;
-        gap: 16px;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .pool {
+        flex: 1;
+        border-radius: 16px;
+        padding: 10px 10px 9px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: radial-gradient(circle at top left, #020617, #020617 60%);
+      }
+
+      .pool-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .dot-up,
+      .dot-down {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      .dot-up {
+        background: var(--accent-up);
+      }
+
+      .dot-down {
+        background: var(--accent-down);
+      }
+
+      .pool-amount {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+
+      .pool-perc {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .bar-wrapper {
+        margin-bottom: 14px;
+      }
+
+      .bar-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+
+      .bar {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: #020617;
+        border: 1px solid rgba(31, 41, 55, 0.9);
+        overflow: hidden;
+        display: flex;
+      }
+
+      .bar-up {
+        height: 100%;
+        background: linear-gradient(90deg, #22c55e, #4ade80);
+        transition: width 0.25s ease-out;
+      }
+
+      .bar-down {
+        height: 100%;
+        background: linear-gradient(90deg, #ef4444, #fb923c);
+        transition: width 0.25s ease-out;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 6px;
       }
 
       button {
         border: none;
-        padding: 12px 22px;
+        padding: 12px 18px;
         border-radius: 999px;
         cursor: pointer;
+        font-size: 15px;
         font-weight: 600;
-        font-size: 16px;
-        min-width: 110px;
+        flex: 1;
+        transition: transform 0.08s ease-out, box-shadow 0.08s ease-out,
+          opacity 0.15s;
       }
 
-      .up {
+      button:active {
+        transform: translateY(1px) scale(0.99);
+        box-shadow: none;
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+
+      .btn-up {
         background: #22c55e;
         color: #022c22;
+        box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
       }
 
-      .down {
+      .btn-down {
         background: #ef4444;
         color: #450a0a;
+        box-shadow: 0 6px 18px rgba(248, 113, 113, 0.35);
+      }
+
+      .footer {
+        margin-top: 10px;
+        font-size: 11px;
+        color: var(--text-muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .status-text {
+        font-size: 11px;
+      }
+
+      .error {
+        margin-top: 8px;
+        font-size: 11px;
+        color: #fca5a5;
       }
     </style>
   </head>
 
   <body>
-    <div class="container">
-      <h1>Healyum ⚡</h1>
-      <p>Predict Tesla: will it go UP or DOWN?</p>
+    <div class="wrapper">
+      <div class="card">
+        <div class="header">
+          <div>
+            <div class="title">Healyum ⚡</div>
+            <div class="subtitle">Predict Tesla: will today close UP or DOWN?</div>
+          </div>
+          <div id="statusBadge" class="badge badge-open">OPEN</div>
+        </div>
 
-      <div class="buttons">
-        <button class="up" onclick="sendChoice('TESLA_UP')">UP 🚀</button>
-        <button class="down" onclick="sendChoice('TESLA_DOWN')">DOWN 📉</button>
+        <div id="marketId" class="market-id">Loading market…</div>
+
+        <div class="pools">
+          <div class="pool">
+            <div class="pool-label">
+              <span class="dot-up"></span> UP
+            </div>
+            <div id="upAmount" class="pool-amount">–</div>
+            <div id="upPerc" class="pool-perc">–</div>
+          </div>
+          <div class="pool">
+            <div class="pool-label">
+              <span class="dot-down"></span> DOWN
+            </div>
+            <div id="downAmount" class="pool-amount">–</div>
+            <div id="downPerc" class="pool-perc">–</div>
+          </div>
+        </div>
+
+        <div class="bar-wrapper">
+          <div class="bar-label">Market odds</div>
+          <div class="bar">
+            <div id="barUp" class="bar-up" style="width: 50%"></div>
+            <div id="barDown" class="bar-down" style="width: 50%"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btnUp" class="btn-up" onclick="sendChoice('TESLA_UP')">
+            UP 🚀
+          </button>
+          <button id="btnDown" class="btn-down" onclick="sendChoice('TESLA_DOWN')">
+            DOWN 📉
+          </button>
+        </div>
+
+        <div class="footer">
+          <div class="status-text" id="statusText">Loading live odds…</div>
+          <div id="updatedAt">–</div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
       </div>
     </div>
 
-   <script>
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
+    <script>
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
 
-  function sendChoice(side) {
-    const today = new Date().toISOString().slice(0, 10); // "2025-11-13"
-    const payload = {
-      type: 'BET',
-      marketId: `TSLA-${today}`,
-      side,      // "UP" o "DOWN"
-      stake: 1   // per ora puntata fissa a 1
-    };
+      // ⚠️ QUI METTERAI IL DOMINIO PUBBLICO DEL BOT
+      // Per ora lasciamo una variabile che puoi cambiare quando metti online il bot
+      const API_BASE = "https://TUO-BOT-DOMINIO/"; // es: https://healyum-bot.onrender.com/
 
-    tg.sendData(JSON.stringify(payload));
-    tg.close();
-  }
-</script>
+      const els = {
+        marketId: document.getElementById("marketId"),
+        statusBadge: document.getElementById("statusBadge"),
+        statusText: document.getElementById("statusText"),
+        upAmount: document.getElementById("upAmount"),
+        downAmount: document.getElementById("downAmount"),
+        upPerc: document.getElementById("upPerc"),
+        downPerc: document.getElementById("downPerc"),
+        barUp: document.getElementById("barUp"),
+        barDown: document.getElementById("barDown"),
+        updatedAt: document.getElementById("updatedAt"),
+        btnUp: document.getElementById("btnUp"),
+        btnDown: document.getElementById("btnDown"),
+        error: document.getElementById("error"),
+      };
+
+      function setBadge(status) {
+        const s = status.toUpperCase();
+        els.statusBadge.className = "badge";
+        if (s === "OPEN") {
+          els.statusBadge.classList.add("badge-open");
+          els.statusBadge.textContent = "OPEN";
+        } else if (s === "LOCKED") {
+          els.statusBadge.classList.add("badge-locked");
+          els.statusBadge.textContent = "LOCKED";
+        } else {
+          els.statusBadge.classList.add("badge-resolved");
+          els.statusBadge.textContent = "RESOLVED";
+        }
+      }
+
+      function setButtonsEnabled(enabled) {
+        els.btnUp.disabled = !enabled;
+        els.btnDown.disabled = !enabled;
+      }
+
+      async function loadMarket() {
+        els.statusText.textContent = "Loading live odds…";
+        els.error.style.display = "none";
+
+        try {
+          const res = await fetch(API_BASE + "market/today", { method: "GET" });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const m = await res.json();
+
+          const up = Number(m.up_pool || 0);
+          const down = Number(m.down_pool || 0);
+          const total = up + down || 1;
+          const upPct = (up / total) * 100;
+          const downPct = (down / total) * 100;
+
+          els.marketId.textContent = m.id || "TSLA daily market";
+          els.upAmount.textContent = up.toFixed(2);
+          els.downAmount.textContent = down.toFixed(2);
+          els.upPerc.textContent = upPct.toFixed(1) + "%";
+          els.downPerc.textContent = downPct.toFixed(1) + "%";
+          els.barUp.style.width = upPct + "%";
+          els.barDown.style.width = downPct + "%";
+          els.updatedAt.textContent =
+            "Updated " + new Date().toLocaleTimeString();
+
+          setBadge(m.status || "OPEN");
+          els.statusText.textContent =
+            m.status === "OPEN"
+              ? "Choose UP or DOWN to join today's pool."
+              : "Market is not accepting new bets.";
+
+          setButtonsEnabled(m.status === "OPEN");
+        } catch (e) {
+          console.error(e);
+          els.statusText.textContent = "Live odds unavailable.";
+          els.error.style.display = "block";
+          els.error.textContent =
+            "Cannot reach Healyum backend yet. Bets still work, but pools are not live.";
+          // Anche se non riusciamo a leggere le pool, i bottoni funzionano
+          setButtonsEnabled(true);
+        }
+      }
+
+      function sendChoice(rawSide) {
+        const payload = {
+          type: "BET",
+          side: rawSide, // "TESLA_UP" | "TESLA_DOWN"
+          stake: 1,
+        };
+
+        tg.sendData(JSON.stringify(payload));
+        tg.close();
+      }
+
+      // carica i dati all'apertura
+      loadMarket();
+    </script>
   </body>
 </html>
-
-
