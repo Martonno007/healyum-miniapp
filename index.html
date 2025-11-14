@@ -344,48 +344,66 @@
         els.btnDown.disabled = !enabled;
       }
 
-      async function loadMarket() {
-        els.statusText.textContent = "Loading live odds…";
-        els.error.style.display = "none";
+async function loadMarket() {
+  els.statusText.textContent = "Loading live odds…";
+  els.error.style.display = "none";
 
-        try {
-          const res = await fetch(API_BASE + "market/today", { method: "GET" });
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          const m = await res.json();
+  try {
+    const res = await fetch(API_BASE + "market/today", { method: "GET" });
 
-          const up = Number(m.up_pool || 0);
-          const down = Number(m.down_pool || 0);
-          const total = up + down || 1;
-          const upPct = (up / total) * 100;
-          const downPct = (down / total) * 100;
+    // 🔍 Log chiaro se il backend risponde ma con errore
+    if (!res.ok) {
+      els.statusText.textContent = "Live odds unavailable.";
+      els.error.style.display = "block";
+      els.error.textContent = `Backend error: HTTP ${res.status} ${res.statusText}`;
+      return;
+    }
 
-          els.marketId.textContent = m.id || "TSLA daily market";
-          els.upAmount.textContent = up.toFixed(2);
-          els.downAmount.textContent = down.toFixed(2);
-          els.upPerc.textContent = upPct.toFixed(1) + "%";
-          els.downPerc.textContent = downPct.toFixed(1) + "%";
-          els.barUp.style.width = upPct + "%";
-          els.barDown.style.width = downPct + "%";
-          els.updatedAt.textContent =
-            "Updated " + new Date().toLocaleTimeString();
+    const m = await res.json();
 
-          setBadge(m.status || "OPEN");
-          els.statusText.textContent =
-            m.status === "OPEN"
-              ? "Choose UP or DOWN to join today's pool."
-              : "Market is not accepting new bets.";
+    // 🔍 Log chiaro se il JSON non è valido
+    if (!m || typeof m !== "object") {
+      els.statusText.textContent = "Live odds unavailable.";
+      els.error.style.display = "block";
+      els.error.textContent = "Backend error: invalid JSON";
+      return;
+    }
 
-          setButtonsEnabled(m.status === "OPEN");
-        } catch (e) {
-          console.error(e);
-          els.statusText.textContent = "Live odds unavailable.";
-          els.error.style.display = "block";
-          els.error.textContent =
-            "Cannot reach Healyum backend yet. Bets still work, but pools are not live.";
-          // Anche se non riusciamo a leggere le pool, i bottoni funzionano
-          setButtonsEnabled(true);
-        }
-      }
+    // --- Se qui, i dati sono OK ---
+    const up = Number(m.up_pool || 0);
+    const down = Number(m.down_pool || 0);
+    const total = up + down || 1;
+
+    const upPct = (up / total) * 100;
+    const downPct = (down / total) * 100;
+
+    els.marketId.textContent = m.id || "TSLA daily market";
+    els.upAmount.textContent = up.toFixed(2);
+    els.downAmount.textContent = down.toFixed(2);
+    els.upPerc.textContent = upPct.toFixed(1) + "%";
+    els.downPerc.textContent = downPct.toFixed(1) + "%";
+
+    els.barUp.style.width = upPct + "%";
+    els.barDown.style.width = downPct + "%";
+
+    els.updatedAt.textContent =
+      "Updated " + new Date().toLocaleTimeString();
+
+    setBadge(m.status || "OPEN");
+    els.statusText.textContent =
+      m.status === "OPEN"
+        ? "Choose UP or DOWN to join today's pool."
+        : "Market is not accepting new bets.";
+
+    setButtonsEnabled(m.status === "OPEN");
+
+  } catch (e) {
+    // 🔍 Error indipendente dal backend (DNS, CORS, rete)
+    els.statusText.textContent = "Live odds unavailable.";
+    els.error.style.display = "block";
+    els.error.textContent = `Fetch error: ${e.message}`;
+  }
+}
 
       function sendChoice(rawSide) {
         const payload = {
@@ -403,4 +421,5 @@
     </script>
   </body>
 </html>
+
 
