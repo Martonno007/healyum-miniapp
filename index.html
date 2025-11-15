@@ -6,6 +6,8 @@
     <title>Healyum ⚡</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Chart.js per il grafico stile Polymarket -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
       :root {
@@ -182,6 +184,17 @@
         transition: width 0.25s ease-out;
       }
 
+      /* -------- GRAFICO STILE POLYMARKET -------- */
+      .chart-wrapper {
+        margin-top: 10px;
+        margin-bottom: 4px;
+      }
+
+      #marketChart {
+        width: 100%;
+        max-height: 170px;
+      }
+
       .actions {
         display: flex;
         gap: 12px;
@@ -281,6 +294,12 @@
           </div>
         </div>
 
+        <!-- GRAFICO STORICO TIPO POLYMARKET -->
+        <div class="chart-wrapper">
+          <div class="bar-label">Price over time (UP %)</div>
+          <canvas id="marketChart" height="140"></canvas>
+        </div>
+
         <div class="actions">
           <button id="btnUp" class="btn-up" onclick="sendChoice('TESLA_UP')">
             UP 🚀
@@ -304,8 +323,7 @@
       tg.ready();
       tg.expand();
 
-      // ⚠️ QUI METTERAI IL DOMINIO PUBBLICO DEL BOT
-      // Per ora lasciamo una variabile che puoi cambiare quando metti online il bot
+      // ⚠️ dominio pubblico del bot
       const API_BASE = "https://healyum-bot.onrender.com/";
 
       const els = {
@@ -344,66 +362,174 @@
         els.btnDown.disabled = !enabled;
       }
 
-async function loadMarket() {
-  els.statusText.textContent = "Loading live odds…";
-  els.error.style.display = "none";
+      // --------- GRAFICO: DATI + INIT ---------
+      const MAX_POINTS = 120; // ~30 minuti con refresh ogni 15s
 
-  try {
-    const res = await fetch(API_BASE + "market/today", { method: "GET" });
+      const marketSeries = {
+        labels: [],
+        up: [],
+        down: [],
+      };
 
-    // 🔍 Log chiaro se il backend risponde ma con errore
-    if (!res.ok) {
-      els.statusText.textContent = "Live odds unavailable.";
-      els.error.style.display = "block";
-      els.error.textContent = `Backend error: HTTP ${res.status} ${res.statusText}`;
-      return;
-    }
+      let marketChart = null;
 
-    const m = await res.json();
+      function initMarketChart() {
+        const ctx = document.getElementById("marketChart");
+        if (!ctx) return;
 
-    // 🔍 Log chiaro se il JSON non è valido
-    if (!m || typeof m !== "object") {
-      els.statusText.textContent = "Live odds unavailable.";
-      els.error.style.display = "block";
-      els.error.textContent = "Backend error: invalid JSON";
-      return;
-    }
+        marketChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: marketSeries.labels,
+            datasets: [
+              {
+                label: "UP %",
+                data: marketSeries.up,
+                borderColor: "#22c55e",
+                backgroundColor: "rgba(34,197,94,0.15)",
+                tension: 0.35,
+                pointRadius: 0,
+                borderWidth: 2,
+                fill: true,
+              },
+              {
+                label: "DOWN %",
+                data: marketSeries.down,
+                borderColor: "#ef4444",
+                backgroundColor: "rgba(239,68,68,0.08)",
+                tension: 0.35,
+                pointRadius: 0,
+                borderWidth: 1.5,
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`,
+                },
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  maxTicksLimit: 5,
+                  color: "#9ca3af",
+                  font: { size: 10 },
+                },
+                grid: {
+                  display: false,
+                },
+              },
+              y: {
+                min: 0,
+                max: 100,
+                ticks: {
+                  stepSize: 25,
+                  color: "#6b7280",
+                  font: { size: 9 },
+                  callback: (v) => v + "%",
+                },
+                grid: {
+                  color: "rgba(31,41,55,0.6)",
+                },
+              },
+            },
+          },
+        });
+      }
 
-    // --- Se qui, i dati sono OK ---
-    const up = Number(m.up_pool || 0);
-    const down = Number(m.down_pool || 0);
-    const total = up + down || 1;
+      function pushMarketPoint(upPct, downPct) {
+        if (!marketChart) return;
 
-    const upPct = (up / total) * 100;
-    const downPct = (down / total) * 100;
+        const label = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
 
-    els.marketId.textContent = m.id || "TSLA daily market";
-    els.upAmount.textContent = up.toFixed(2);
-    els.downAmount.textContent = down.toFixed(2);
-    els.upPerc.textContent = upPct.toFixed(1) + "%";
-    els.downPerc.textContent = downPct.toFixed(1) + "%";
+        marketSeries.labels.push(label);
+        marketSeries.up.push(upPct);
+        marketSeries.down.push(downPct);
 
-    els.barUp.style.width = upPct + "%";
-    els.barDown.style.width = downPct + "%";
+        // tieni solo gli ultimi MAX_POINTS punti
+        if (marketSeries.labels.length > MAX_POINTS) {
+          marketSeries.labels.shift();
+          marketSeries.up.shift();
+          marketSeries.down.shift();
+        }
 
-    els.updatedAt.textContent =
-      "Updated " + new Date().toLocaleTimeString();
+        marketChart.update("none");
+      }
 
-    setBadge(m.status || "OPEN");
-    els.statusText.textContent =
-      m.status === "OPEN"
-        ? "Choose UP or DOWN to join today's pool."
-        : "Market is not accepting new bets.";
+      // --------- FETCH MERCATO ---------
+      async function loadMarket() {
+        els.statusText.textContent = "Loading live odds…";
+        els.error.style.display = "none";
 
-    setButtonsEnabled(m.status === "OPEN");
+        try {
+          const res = await fetch(API_BASE + "market/today", { method: "GET" });
 
-  } catch (e) {
-    // 🔍 Error indipendente dal backend (DNS, CORS, rete)
-    els.statusText.textContent = "Live odds unavailable.";
-    els.error.style.display = "block";
-    els.error.textContent = `Fetch error: ${e.message}`;
-  }
-}
+          if (!res.ok) {
+            els.statusText.textContent = "Live odds unavailable.";
+            els.error.style.display = "block";
+            els.error.textContent = `Backend error: HTTP ${res.status} ${res.statusText}`;
+            return;
+          }
+
+          const m = await res.json();
+
+          if (!m || typeof m !== "object") {
+            els.statusText.textContent = "Live odds unavailable.";
+            els.error.style.display = "block";
+            els.error.textContent = "Backend error: invalid JSON";
+            return;
+          }
+
+          const up = Number(m.up_pool || 0);
+          const down = Number(m.down_pool || 0);
+          const total = up + down || 1;
+
+          const upPct = (up / total) * 100;
+          const downPct = (down / total) * 100;
+
+          els.marketId.textContent = m.id || "TSLA daily market";
+          els.upAmount.textContent = up.toFixed(2);
+          els.downAmount.textContent = down.toFixed(2);
+          els.upPerc.textContent = upPct.toFixed(1) + "%";
+          els.downPerc.textContent = downPct.toFixed(1) + "%";
+
+          els.barUp.style.width = upPct + "%";
+          els.barDown.style.width = downPct + "%";
+
+          els.updatedAt.textContent =
+            "Updated " + new Date().toLocaleTimeString();
+
+          setBadge(m.status || "OPEN");
+          els.statusText.textContent =
+            m.status === "OPEN"
+              ? "Choose UP or DOWN to join today's pool."
+              : "Market is not accepting new bets.";
+
+          setButtonsEnabled(m.status === "OPEN");
+
+          // 👉 aggiorna serie per il grafico
+          pushMarketPoint(upPct, downPct);
+        } catch (e) {
+          els.statusText.textContent = "Live odds unavailable.";
+          els.error.style.display = "block";
+          els.error.textContent = `Fetch error: ${e.message}`;
+        }
+      }
 
       function sendChoice(rawSide) {
         const payload = {
@@ -416,15 +542,10 @@ async function loadMarket() {
         tg.close();
       }
 
-      // carica i dati all'apertura
+      // init grafico + prima fetch + polling
+      initMarketChart();
       loadMarket();
       setInterval(loadMarket, 15000);
     </script>
   </body>
 </html>
-
-
-
-
-
-
