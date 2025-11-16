@@ -2,11 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
     <title>Healyum ⚡</title>
 
+    <!-- Telegram WebApp JS -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Chart.js per il grafico stile Polymarket -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -14,10 +18,10 @@
         --bg: #020617;
         --bg-card: #020617;
         --accent-up: #22c55e;
-        --accent-down: #ef4444;
+        --accent-down: #f97316;
         --text-main: #e5e7eb;
         --text-muted: #9ca3af;
-        --border-subtle: #1f2937;
+        --border-subtle: #111827;
       }
 
       * {
@@ -26,28 +30,24 @@
 
       body {
         margin: 0;
-        padding: 0;
-        background: radial-gradient(circle at top, #0f172a, #020617 60%);
-        color: var(--text-main);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
         min-height: 100vh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          "Helvetica Neue", Arial, sans-serif;
+        background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
+        color: var(--text-main);
         display: flex;
         align-items: center;
         justify-content: center;
-      }
-
-      .wrapper {
-        width: 100%;
-        max-width: 460px;
-        padding: 20px 16px;
+        padding: 16px;
       }
 
       .card {
-        background: rgba(15, 23, 42, 0.95);
+        width: 100%;
+        max-width: 420px;
+        background: radial-gradient(circle at top left, #111827, #020617);
         border-radius: 24px;
-        padding: 20px 18px 18px;
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+        padding: 16px 18px 20px;
+        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
         border: 1px solid rgba(148, 163, 184, 0.18);
       }
 
@@ -61,18 +61,20 @@
       .title {
         font-size: 20px;
         font-weight: 700;
+        margin: 0;
       }
 
       .subtitle {
+        margin: 4px 0 0;
         font-size: 13px;
         color: var(--text-muted);
-        margin-bottom: 14px;
       }
 
       .badge {
-        font-size: 11px;
         padding: 4px 10px;
         border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
         border: 1px solid var(--border-subtle);
         text-transform: uppercase;
         letter-spacing: 0.08em;
@@ -96,254 +98,369 @@
         background: rgba(15, 23, 42, 0.7);
       }
 
-      .market-id {
-        font-size: 11px;
-        color: var(--text-muted);
-        margin-bottom: 14px;
-      }
-
-      .pools {
+      /* asset + prezzi + link */
+      .asset-row {
         display: flex;
-        gap: 10px;
-        margin-bottom: 16px;
-      }
-
-      .pool {
-        flex: 1;
-        border-radius: 16px;
-        padding: 10px 10px 9px;
-        border: 1px solid rgba(148, 163, 184, 0.18);
-        background: radial-gradient(circle at top left, #020617, #020617 60%);
-      }
-
-      .pool-label {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin-bottom: 4px;
-        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 4px;
+        margin-top: 10px;
+        margin-bottom: 10px;
       }
 
-      .dot-up,
-      .dot-down {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
+      .asset-symbol {
+        font-size: 13px;
+        color: var(--text-muted);
       }
 
-      .dot-up {
-        background: var(--accent-up);
+      .asset-prices {
+        font-size: 12px;
+        color: var(--text-main);
       }
 
-      .dot-down {
-        background: var(--accent-down);
+      .asset-prices span.muted {
+        color: var(--text-muted);
       }
 
-      .pool-amount {
-        font-size: 18px;
-        font-weight: 700;
+      .wallet-link {
+        font-size: 12px;
+        color: #38bdf8;
+        text-decoration: none;
+      }
+
+      /* stats row */
+      .stats-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .stat-box {
+        flex: 1;
+        background: #020617;
+        border-radius: 14px;
+        padding: 8px 10px;
+      }
+
+      .label-up {
+        font-size: 11px;
+        color: #4ade80;
         margin-bottom: 2px;
       }
 
-      .pool-perc {
-        font-size: 12px;
-        color: var(--text-muted);
+      .label-down {
+        font-size: 11px;
+        color: #fb7185;
+        margin-bottom: 2px;
       }
 
-      .bar-wrapper {
-        margin-bottom: 14px;
-      }
-
-      .bar-label {
+      .label-muted {
         font-size: 11px;
         color: var(--text-muted);
-        margin-bottom: 4px;
+        margin-bottom: 2px;
       }
 
-      .bar {
-        width: 100%;
-        height: 10px;
+      .value {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .value-small {
+        font-size: 12px;
+        color: var(--text-main);
+      }
+
+      .section {
+        margin-top: 14px;
+      }
+
+      .section-title {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+
+      .odds-bar {
+        position: relative;
+        height: 8px;
         border-radius: 999px;
-        background: #020617;
-        border: 1px solid rgba(31, 41, 55, 0.9);
         overflow: hidden;
-        display: flex;
+        background: #111827;
       }
 
-      .bar-up {
-        height: 100%;
-        background: linear-gradient(90deg, #22c55e, #4ade80);
-        transition: width 0.25s ease-out;
+      .odds-up {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: #16a34a;
+        transition: width 0.2s ease-out;
       }
 
-      .bar-down {
-        height: 100%;
-        background: linear-gradient(90deg, #ef4444, #fb923c);
-        transition: width 0.25s ease-out;
+      .odds-down {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background: #f97316;
+        transition: width 0.2s ease-out;
       }
 
-      /* -------- GRAFICO STILE POLYMARKET -------- */
-      .chart-wrapper {
-        margin-top: 10px;
-        margin-bottom: 4px;
+      .chart-container {
+        background: #020617;
+        border-radius: 18px;
+        padding: 8px 8px 4px;
       }
 
-      #marketChart {
+      #votesChart {
         width: 100%;
         max-height: 170px;
       }
 
-      .actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 6px;
+      .chart-empty {
+        font-size: 12px;
+        color: var(--text-muted);
+        padding: 16px;
+        text-align: center;
       }
 
-      button {
-        border: none;
-        padding: 12px 18px;
+      .range-row {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .range-btn {
         border-radius: 999px;
-        cursor: pointer;
+        border: none;
+        padding: 5px 12px;
+        font-size: 11px;
+        background: #020617;
+        color: var(--text-muted);
+      }
+
+      .range-btn.active {
+        background: #111827;
+        color: var(--text-main);
+      }
+
+      .cta-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .btn-up,
+      .btn-down {
+        flex: 1;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 0;
         font-size: 15px;
         font-weight: 600;
-        flex: 1;
+        color: #020617;
+        cursor: pointer;
         transition: transform 0.08s ease-out, box-shadow 0.08s ease-out,
           opacity 0.15s;
       }
 
-      button:active {
-        transform: translateY(1px) scale(0.99);
-        box-shadow: none;
-      }
-
-      button:disabled {
-        opacity: 0.55;
-        cursor: default;
-      }
-
       .btn-up {
         background: #22c55e;
-        color: #022c22;
         box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
       }
 
       .btn-down {
-        background: #ef4444;
-        color: #450a0a;
+        background: #fb7185;
         box-shadow: 0 6px 18px rgba(248, 113, 113, 0.35);
       }
 
-      .footer {
-        margin-top: 10px;
-        font-size: 11px;
-        color: var(--text-muted);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+      .btn-up:active,
+      .btn-down:active {
+        transform: translateY(1px) scale(0.99);
+        box-shadow: none;
       }
 
-      .status-text {
+      .btn-up:disabled,
+      .btn-down:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+
+      .footer-text {
+        margin-top: 8px;
         font-size: 11px;
+        color: var(--text-muted);
+        text-align: center;
       }
 
       .error {
         margin-top: 8px;
         font-size: 11px;
         color: #fca5a5;
+        text-align: center;
       }
     </style>
   </head>
 
   <body>
-    <div class="wrapper">
-      <div class="card">
-        <div class="header">
-          <div>
-            <div class="title">Healyum ⚡</div>
-            <div class="subtitle">Predict Tesla: will today close UP or DOWN?</div>
-          </div>
-          <div id="statusBadge" class="badge badge-open">OPEN</div>
+    <div class="card">
+      <!-- HEADER -->
+      <div class="header">
+        <div>
+          <h1 class="title">Healyum ⚡</h1>
+          <p class="subtitle">
+            Predict Tesla: will today close UP or DOWN?
+          </p>
         </div>
-
-        <div id="marketId" class="market-id">Loading market…</div>
-
-        <div class="pools">
-          <div class="pool">
-            <div class="pool-label">
-              <span class="dot-up"></span> UP
-            </div>
-            <div id="upAmount" class="pool-amount">–</div>
-            <div id="upPerc" class="pool-perc">–</div>
-          </div>
-          <div class="pool">
-            <div class="pool-label">
-              <span class="dot-down"></span> DOWN
-            </div>
-            <div id="downAmount" class="pool-amount">–</div>
-            <div id="downPerc" class="pool-perc">–</div>
-          </div>
-        </div>
-
-        <div class="bar-wrapper">
-          <div class="bar-label">Market odds</div>
-          <div class="bar">
-            <div id="barUp" class="bar-up" style="width: 50%"></div>
-            <div id="barDown" class="bar-down" style="width: 50%"></div>
-          </div>
-        </div>
-
-        <!-- GRAFICO STORICO TIPO POLYMARKET -->
-        <div class="chart-wrapper">
-          <div class="bar-label">Price over time (UP %)</div>
-          <canvas id="marketChart" height="140"></canvas>
-        </div>
-
-        <div class="actions">
-          <button id="btnUp" class="btn-up" onclick="sendChoice('TESLA_UP')">
-            UP 🚀
-          </button>
-          <button id="btnDown" class="btn-down" onclick="sendChoice('TESLA_DOWN')">
-            DOWN 📉
-          </button>
-        </div>
-
-        <div class="footer">
-          <div class="status-text" id="statusText">Loading live odds…</div>
-          <div id="updatedAt">–</div>
-        </div>
-
-        <div id="error" class="error" style="display: none;"></div>
+        <div id="statusBadge" class="badge badge-open">OPEN</div>
       </div>
+
+      <!-- ASSET + PREZZI + LINK WALLET -->
+      <div class="asset-row">
+        <div>
+          <div class="asset-symbol" id="assetSymbol">TSLAX – -</div>
+          <div class="asset-prices">
+            <span class="muted">Open:</span>
+            <span id="priceOpen">-</span>
+            <span class="muted">· Now:</span>
+            <span id="priceNow">-</span>
+          </div>
+        </div>
+        <a
+          id="walletLink"
+          href="#"
+          target="_blank"
+          rel="noreferrer"
+          class="wallet-link"
+          style="display: none"
+        >
+          View in wallet
+        </a>
+      </div>
+
+      <!-- STATS: UP / DOWN / POOL -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="label-up">UP</div>
+          <div class="value" id="pctUp">-</div>
+        </div>
+        <div class="stat-box">
+          <div class="label-down">DOWN</div>
+          <div class="value" id="pctDown">-</div>
+        </div>
+        <div class="stat-box">
+          <div class="label-muted">Pool</div>
+          <div class="value-small">
+            Votes: <span id="totalVotes">-</span>
+          </div>
+          <div class="value-small">
+            Volume: <span id="volumeUsdc">-</span> USDC
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKET ODDS BAR -->
+      <div class="section">
+        <div class="section-title">Market odds</div>
+        <div class="odds-bar">
+          <div class="odds-up" id="oddsUp" style="width: 50%"></div>
+          <div class="odds-down" id="oddsDown" style="width: 50%"></div>
+        </div>
+      </div>
+
+      <!-- GRAFICO -->
+      <div class="section">
+        <div class="section-title">Votes over time (UP %)</div>
+        <div class="chart-container">
+          <canvas id="votesChart" height="160"></canvas>
+          <div class="chart-empty" id="chartEmpty" style="display: none">
+            Not enough data yet – place the first votes!
+          </div>
+        </div>
+        <div class="range-row">
+          <button class="range-btn active" data-range="1h">1H</button>
+          <button class="range-btn" data-range="6h">6H</button>
+          <button class="range-btn" data-range="all">ALL</button>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-row">
+        <button id="btnUp" class="btn-up">UP 🚀</button>
+        <button id="btnDown" class="btn-down">DOWN 📉</button>
+      </div>
+
+      <div class="footer-text" id="footerText">
+        Loading market…
+      </div>
+      <div class="footer-text" id="openedText">Opened –</div>
+
+      <div id="error" class="error" style="display: none"></div>
     </div>
 
     <script>
+      // Telegram WebApp
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
 
-      // ⚠️ dominio pubblico del bot
-      const API_BASE = "https://healyum-bot.onrender.com/";
+      // Backend Render
+      const API_BASE = "https://healyum-bot.onrender.com";
 
+      // Elementi DOM
       const els = {
-        marketId: document.getElementById("marketId"),
         statusBadge: document.getElementById("statusBadge"),
-        statusText: document.getElementById("statusText"),
-        upAmount: document.getElementById("upAmount"),
-        downAmount: document.getElementById("downAmount"),
-        upPerc: document.getElementById("upPerc"),
-        downPerc: document.getElementById("downPerc"),
-        barUp: document.getElementById("barUp"),
-        barDown: document.getElementById("barDown"),
-        updatedAt: document.getElementById("updatedAt"),
+        assetSymbol: document.getElementById("assetSymbol"),
+        priceOpen: document.getElementById("priceOpen"),
+        priceNow: document.getElementById("priceNow"),
+        walletLink: document.getElementById("walletLink"),
+        pctUp: document.getElementById("pctUp"),
+        pctDown: document.getElementById("pctDown"),
+        totalVotes: document.getElementById("totalVotes"),
+        volumeUsdc: document.getElementById("volumeUsdc"),
+        oddsUp: document.getElementById("oddsUp"),
+        oddsDown: document.getElementById("oddsDown"),
+        footerText: document.getElementById("footerText"),
+        openedText: document.getElementById("openedText"),
+        error: document.getElementById("error"),
         btnUp: document.getElementById("btnUp"),
         btnDown: document.getElementById("btnDown"),
-        error: document.getElementById("error"),
+        chartEmpty: document.getElementById("chartEmpty"),
       };
 
+      let currentMarketId = null;
+      let currentRange = "1h";
+      let marketStatus = "OPEN";
+
+      // Chart.js setup
+      let chart = null;
+
+      function formatPct(num) {
+        return (Math.round(num * 1000) / 10).toFixed(1) + "%";
+      }
+
+      function formatTime(ts) {
+        const d = new Date(ts);
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+
+      function formatOpenedAgo(openedAt) {
+        if (!openedAt) return "Opened –";
+        const opened = new Date(openedAt);
+        const now = new Date();
+        const diffMs = now - opened;
+        const minutes = Math.max(0, Math.floor(diffMs / 60000));
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        let s = "Opened ";
+        if (hours > 0) s += hours + "h ";
+        s += mins + "m ago";
+        return s;
+      }
+
       function setBadge(status) {
-        const s = status.toUpperCase();
+        const s = (status || "OPEN").toUpperCase();
+        marketStatus = s;
         els.statusBadge.className = "badge";
         if (s === "OPEN") {
           els.statusBadge.classList.add("badge-open");
@@ -355,51 +472,36 @@
           els.statusBadge.classList.add("badge-resolved");
           els.statusBadge.textContent = "RESOLVED";
         }
-      }
-
-      function setButtonsEnabled(enabled) {
+        const enabled = s === "OPEN";
         els.btnUp.disabled = !enabled;
         els.btnDown.disabled = !enabled;
       }
 
-      // --------- GRAFICO: DATI + INIT ---------
-      const MAX_POINTS = 120; // ~30 minuti con refresh ogni 15s
-
-      const marketSeries = {
-        labels: [],
-        up: [],
-        down: [],
-      };
-
-      let marketChart = null;
-
-      function initMarketChart() {
-        const ctx = document.getElementById("marketChart");
-        if (!ctx) return;
-
-        marketChart = new Chart(ctx, {
+      function initChart() {
+        const ctx = document.getElementById("votesChart").getContext("2d");
+        chart = new Chart(ctx, {
           type: "line",
           data: {
-            labels: marketSeries.labels,
+            labels: [],
             datasets: [
               {
                 label: "UP %",
-                data: marketSeries.up,
+                data: [],
                 borderColor: "#22c55e",
                 backgroundColor: "rgba(34,197,94,0.15)",
-                tension: 0.35,
-                pointRadius: 0,
                 borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.35,
                 fill: true,
               },
               {
                 label: "DOWN %",
-                data: marketSeries.down,
-                borderColor: "#ef4444",
-                backgroundColor: "rgba(239,68,68,0.08)",
-                tension: 0.35,
-                pointRadius: 0,
+                data: [],
+                borderColor: "#f97316",
+                backgroundColor: "rgba(249,115,22,0.08)",
                 borderWidth: 1.5,
+                pointRadius: 0,
+                tension: 0.35,
                 fill: false,
               },
             ],
@@ -408,28 +510,19 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: {
-                display: false,
-              },
+              legend: { display: false },
               tooltip: {
                 mode: "index",
                 intersect: false,
                 callbacks: {
-                  label: (ctx) =>
-                    `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`,
+                  label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`,
                 },
               },
             },
             scales: {
               x: {
-                ticks: {
-                  maxTicksLimit: 5,
-                  color: "#9ca3af",
-                  font: { size: 10 },
-                },
-                grid: {
-                  display: false,
-                },
+                ticks: { color: "#9ca3af", font: { size: 10 }, maxTicksLimit: 5 },
+                grid: { display: false },
               },
               y: {
                 min: 0,
@@ -440,143 +533,146 @@
                   font: { size: 9 },
                   callback: (v) => v + "%",
                 },
-                grid: {
-                  color: "rgba(31,41,55,0.6)",
-                },
+                grid: { color: "rgba(31,41,55,0.6)" },
               },
             },
           },
         });
       }
 
-      function pushMarketPoint(upPct, downPct) {
-        if (!marketChart) return;
-
-        const label = new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
-
-        marketSeries.labels.push(label);
-        marketSeries.up.push(upPct);
-        marketSeries.down.push(downPct);
-
-        // tieni solo gli ultimi MAX_POINTS punti
-        if (marketSeries.labels.length > MAX_POINTS) {
-          marketSeries.labels.shift();
-          marketSeries.up.shift();
-          marketSeries.down.shift();
-        }
-
-        marketChart.update("none");
-      }
-
-      // --------- FETCH MERCATO ---------
-      async function loadMarket() {
-        els.statusText.textContent = "Loading live odds…";
+      async function loadMarketSummary() {
         els.error.style.display = "none";
-
         try {
-          const res = await fetch(API_BASE + "market/today", { method: "GET" });
-
+          const res = await fetch(`${API_BASE}/api/markets/latest`);
           if (!res.ok) {
-            els.statusText.textContent = "Live odds unavailable.";
-            els.error.style.display = "block";
-            els.error.textContent = `Backend error: HTTP ${res.status} ${res.statusText}`;
-            return;
+            throw new Error(`HTTP ${res.status} ${res.statusText}`);
           }
+          const data = await res.json();
+          currentMarketId = data.id;
 
-          const m = await res.json();
+          // header asset
+          els.assetSymbol.textContent = `${data.asset || "TSLAX"} – ${data.date}`;
+          els.priceOpen.textContent =
+            data.open_price != null ? data.open_price.toFixed(2) : "-";
+          els.priceNow.textContent =
+            data.current_price != null ? data.current_price.toFixed(2) : "-";
 
-          if (!m || typeof m !== "object") {
-            els.statusText.textContent = "Live odds unavailable.";
-            els.error.style.display = "block";
-            els.error.textContent = "Backend error: invalid JSON";
-            return;
-          }
-
-          const up = Number(m.up_pool || 0);
-          const down = Number(m.down_pool || 0);
-          const total = up + down || 1;
-
-          const upPct = (up / total) * 100;
-          const downPct = (down / total) * 100;
-
-          els.marketId.textContent = m.id || "TSLA daily market";
-          els.upAmount.textContent = up.toFixed(2);
-          els.downAmount.textContent = down.toFixed(2);
-          els.upPerc.textContent = upPct.toFixed(1) + "%";
-          els.downPerc.textContent = downPct.toFixed(1) + "%";
-
-          els.barUp.style.width = upPct + "%";
-          els.barDown.style.width = downPct + "%";
-
-          // --- Opened Xh Ym ago (usa minutes_open dal backend) ---
-          if (typeof m.minutes_open === "number") {
-            const totalMinutes = Math.max(0, Math.floor(m.minutes_open));
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-
-            let label = "Opened ";
-            if (hours > 0) {
-              label += `${hours}h `;
-            }
-            label += `${minutes}m ago`;
-
-            els.updatedAt.textContent = label;
-          } else if (m.opened_at) {
-            // fallback se minutes_open non è presente ma abbiamo opened_at
-            const opened = new Date(m.opened_at);
-            const now = new Date();
-            const diffMs = now - opened;
-            const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
-            const hours = Math.floor(diffMinutes / 60);
-            const minutes = diffMinutes % 60;
-
-            let label = "Opened ";
-            if (hours > 0) {
-              label += `${hours}h `;
-            }
-            label += `${minutes}m ago`;
-
-            els.updatedAt.textContent = label;
+          if (data.wallet_url) {
+            els.walletLink.href = data.wallet_url;
+            els.walletLink.style.display = "inline";
           } else {
-            els.updatedAt.textContent = "-";
+            els.walletLink.style.display = "none";
           }
 
-          setBadge(m.status || "OPEN");
-          els.statusText.textContent =
-            m.status === "OPEN"
+          const pctUp = data.pct_up ?? 0.5;
+          const pctDown = data.pct_down ?? 0.5;
+
+          els.pctUp.textContent = formatPct(pctUp);
+          els.pctDown.textContent = formatPct(pctDown);
+
+          els.totalVotes.textContent = data.total_votes ?? 0;
+          els.volumeUsdc.textContent =
+            data.volume_usdc != null ? data.volume_usdc.toFixed(0) : "-";
+
+          els.oddsUp.style.width = pctUp * 100 + "%";
+          els.oddsDown.style.width = pctDown * 100 + "%";
+
+          setBadge(data.status || "OPEN");
+          els.footerText.textContent =
+            data.status === "OPEN"
               ? "Choose UP or DOWN to join today's pool."
               : "Market is not accepting new bets.";
-
-          setButtonsEnabled(m.status === "OPEN");
-
-          // 👉 aggiorna serie per il grafico
-          pushMarketPoint(upPct, downPct);
+          els.openedText.textContent = formatOpenedAgo(data.opened_at);
         } catch (e) {
-          els.statusText.textContent = "Live odds unavailable.";
           els.error.style.display = "block";
-          els.error.textContent = `Fetch error: ${e.message}`;
+          els.error.textContent = "Error loading market: " + e.message;
+          els.footerText.textContent = "Live data unavailable.";
+        }
+      }
+
+      async function loadMarketHistory(range) {
+        if (!currentMarketId) return;
+        els.error.style.display = "none";
+        try {
+          const res = await fetch(
+            `${API_BASE}/api/markets/${encodeURIComponent(
+              currentMarketId
+            )}/history?range=${range}`
+          );
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status} ${res.statusText}`);
+          }
+          const data = await res.json();
+          const history = data.history || [];
+
+          if (!history.length) {
+            els.chartEmpty.style.display = "block";
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+            chart.data.datasets[1].data = [];
+            chart.update();
+            return;
+          } else {
+            els.chartEmpty.style.display = "none";
+          }
+
+          const labels = history.map((p) => formatTime(p.ts));
+          const upSeries = history.map((p) =>
+            Math.round((p.pct_up || 0) * 1000) / 10
+          );
+          const downSeries = history.map((p) =>
+            Math.round((p.pct_down || 0) * 1000) / 10
+          );
+
+          chart.data.labels = labels;
+          chart.data.datasets[0].data = upSeries;
+          chart.data.datasets[1].data = downSeries;
+          chart.update("none");
+        } catch (e) {
+          els.error.style.display = "block";
+          els.error.textContent = "Error loading history: " + e.message;
         }
       }
 
       function sendChoice(rawSide) {
+        if (marketStatus !== "OPEN") return;
         const payload = {
           type: "BET",
-          side: rawSide, // "TESLA_UP" | "TESLA_DOWN"
+          side: rawSide, // TESLA_UP / TESLA_DOWN
           stake: 1,
         };
-
         tg.sendData(JSON.stringify(payload));
         tg.close();
       }
 
-      // init grafico + prima fetch + polling
-      initMarketChart();
-      loadMarket();
-      setInterval(loadMarket, 15000);
+      // Eventi bottoni range
+      document.querySelectorAll(".range-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const range = btn.getAttribute("data-range");
+          currentRange = range;
+          document
+            .querySelectorAll(".range-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          loadMarketHistory(range);
+        });
+      });
+
+      // Eventi bottoni UP/DOWN
+      els.btnUp.addEventListener("click", () => sendChoice("TESLA_UP"));
+      els.btnDown.addEventListener("click", () => sendChoice("TESLA_DOWN"));
+
+      // Init
+      initChart();
+      (async () => {
+        await loadMarketSummary();
+        await loadMarketHistory(currentRange);
+        // polling ogni 10s
+        setInterval(async () => {
+          await loadMarketSummary();
+          await loadMarketHistory(currentRange);
+        }, 10000);
+      })();
     </script>
   </body>
 </html>
